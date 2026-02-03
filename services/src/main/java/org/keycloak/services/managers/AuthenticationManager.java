@@ -1113,6 +1113,15 @@ public class AuthenticationManager {
         event.event(EventType.LOGIN);
         event.session(userSession);
         Response response = redirectAfterSuccessfulFlow(session, realm, userSession, clientSessionCtx, request, uriInfo, clientConnection, event, authSession);
+        Map<String, String> notes = authSession.getUserSessionNotes();
+        if (notes!= null) {
+            var notesFiltered = notes.entrySet().stream()
+                    .filter(e -> e.getKey().startsWith("eventdetail_"))
+                    .collect(java.util.stream.Collectors.toMap(Map.Entry::getKey, Map.Entry::getValue));
+            for (String note : notesFiltered.keySet()) {
+                event.detail(note.substring("eventdetail_".length()), notesFiltered.get(note));
+            }
+        }
         event.success();
         return response;
     }
